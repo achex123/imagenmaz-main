@@ -52,7 +52,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
     }
   };
 
-  // Function to enhance the prompt using Mistral Small via OpenRouter
+  // Function to enhance the prompt using only Mistral Small via OpenRouter
   const handleEnhancePrompt = async () => {
     if (!prompt.trim() || isEnhancing || isLoading || disabled) return;
     
@@ -63,17 +63,17 @@ const PromptInput: React.FC<PromptInputProps> = ({
       // Apply the enhanced prompt
       setPrompt(enhancedPrompt);
       
-      // Update toast to reflect image-aware enhancement
-      toast.success('Prompt enhanced', {
+      // Update toast to reflect Mistral-only enhancement
+      toast.success('Prompt enhanced with Mistral AI', {
         description: originalImage 
-          ? 'Your edit was refined based on both text and image context'
+          ? 'Your edit was refined based on image context and text analysis'
           : 'Your edit description has been refined for better results',
       });
     } catch (error) {
-      // Handle specific API key missing error
+      // Handle API key missing error
       if ((error as Error).name === 'ApiKeyMissingError') {
         toast.error('API key missing', {
-          description: 'Please add your Gemini API key to the .env file'
+          description: 'Please add your OpenRouter API key to the .env file'
         });
       } else {
         // Handle generic errors
