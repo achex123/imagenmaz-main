@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wand2 } from 'lucide-react';
+import { Wand2, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { enhancePrompt } from '@/lib/enhancePrompt';
 import AnimatedPlaceholder from './AnimatedPlaceholder';
+import { toast } from 'sonner';
 
 interface PromptInputProps {
   onSubmit: (prompt: string) => void;
   isLoading?: boolean;
   defaultValue?: string;
   className?: string;
-  disabled?: boolean; // Add the disabled prop to the interface
+  disabled?: boolean;
 }
 
 const PromptInput: React.FC<PromptInputProps> = ({
@@ -16,9 +18,10 @@ const PromptInput: React.FC<PromptInputProps> = ({
   isLoading = false,
   defaultValue = '',
   className,
-  disabled = false // Set default value to false
+  disabled = false
 }) => {
   const [prompt, setPrompt] = useState(defaultValue);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   // Example suggestions for the placeholder
@@ -42,8 +45,25 @@ const PromptInput: React.FC<PromptInputProps> = ({
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (prompt.trim() && !isLoading && !disabled) {
+    if (prompt.trim() && !isLoading && !disabled && !isEnhancing) {
       onSubmit(prompt.trim());
+    }
+  };
+
+  // Function to enhance the prompt using Gemini 2.0 Flash
+  const handleEnhancePrompt = async () => {
+    if (!prompt.trim() || isEnhancing || isLoading || disabled) return;
+    
+    try {
+      setIsEnhancing(true);
+      const enhancedPrompt = await enhancePrompt(prompt);
+      setPrompt(enhancedPrompt);
+      toast.success('Prompt enhanced with Gemini 2.0');
+    } catch (error) {
+      toast.error('Failed to enhance prompt');
+      console.error('Enhance prompt error:', error);
+    } finally {
+      setIsEnhancing(false);
     }
   };
   
@@ -55,14 +75,14 @@ const PromptInput: React.FC<PromptInputProps> = ({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder=" "
-          disabled={isLoading || disabled}
+          disabled={isLoading || disabled || isEnhancing}
           rows={1}
           className={cn(
-            'w-full p-4 pr-12 text-sm sm:text-base resize-none overflow-hidden rounded-lg font-hand',
+            'w-full p-4 pr-24 text-sm sm:text-base resize-none overflow-hidden rounded-lg font-hand',
             'bg-white border border-input focus:ring-2 focus:ring-ring focus:border-input',
             'transition-all duration-200 outline-none',
             'placeholder:text-muted-foreground',
-            (isLoading || disabled) && 'opacity-70 cursor-not-allowed'
+            (isLoading || disabled || isEnhancing) && 'opacity-70 cursor-not-allowed'
           )}
         />
         
@@ -73,13 +93,43 @@ const PromptInput: React.FC<PromptInputProps> = ({
           </div>
         )}
         
+        {/* Enhance button */}
+        {prompt.trim().length > 0 && (
+          <button
+            type="button"
+            onClick={handleEnhancePrompt}
+            disabled={isLoading || disabled || isEnhancing || !prompt.trim()}
+            className={cn(
+              'absolute right-12 top-2 p-2 rounded-md',
+              'transition-all duration-200 group',
+              isEnhancing ? 'bg-purple-100 text-purple-500' :
+                prompt.trim() && !isLoading && !disabled
+                  ? 'bg-purple-100 text-purple-500 hover:bg-purple-200'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+            )}
+            title="Enhance prompt with Gemini 2.0"
+          >
+            {isEnhancing ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                <span className="absolute -top-9 right-0 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Enhance with Gemini
+                </span>
+              </>
+            )}
+          </button>
+        )}
+        
+        {/* Submit button */}
         <button
           type="submit"
-          disabled={!prompt.trim() || isLoading || disabled}
+          disabled={!prompt.trim() || isLoading || disabled || isEnhancing}
           className={cn(
             'absolute right-2 top-2 p-2 rounded-md',
             'transition-all duration-200',
-            prompt.trim() && !isLoading && !disabled
+            prompt.trim() && !isLoading && !disabled && !isEnhancing
               ? 'bg-primary text-white hover:bg-primary/90'
               : 'bg-muted text-muted-foreground cursor-not-allowed'
           )}
