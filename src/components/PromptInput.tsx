@@ -50,17 +50,33 @@ const PromptInput: React.FC<PromptInputProps> = ({
     }
   };
 
-  // Function to enhance the prompt using Gemini 2.0 Flash
+  // Function to enhance the prompt using Gemini 1.5 Flash
   const handleEnhancePrompt = async () => {
     if (!prompt.trim() || isEnhancing || isLoading || disabled) return;
     
     try {
       setIsEnhancing(true);
       const enhancedPrompt = await enhancePrompt(prompt);
+      
+      // Apply the enhanced prompt
       setPrompt(enhancedPrompt);
-      toast.success('Prompt enhanced successfully!');
+      
+      // Show success message with clearer explanation
+      toast.success('Prompt enhanced', {
+        description: 'Your edit description has been refined for better results',
+      });
     } catch (error) {
-      toast.error('Failed to enhance prompt');
+      // Handle specific API key missing error
+      if ((error as Error).name === 'ApiKeyMissingError') {
+        toast.error('API key missing', {
+          description: 'Please add your Gemini API key to the .env file'
+        });
+      } else {
+        // Handle generic errors
+        toast.error('Failed to enhance prompt', {
+          description: 'Please try again or continue with your original prompt'
+        });
+      }
       console.error('Enhance prompt error:', error);
     } finally {
       setIsEnhancing(false);
@@ -107,7 +123,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
                   ? 'bg-purple-100 text-purple-500 hover:bg-purple-200'
                   : 'bg-muted text-muted-foreground cursor-not-allowed'
             )}
-            title="Enhance prompt!"
+            title="Refine your edit description"
           >
             {isEnhancing ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -115,7 +131,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
               <>
                 <Sparkles className="w-5 h-5" />
                 <span className="absolute -top-9 right-0 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Enhance!
+                  Refine Edit
                 </span>
               </>
             )}
