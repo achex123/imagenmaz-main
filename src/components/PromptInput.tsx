@@ -58,7 +58,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
       setIsEnhancing(true);
       const enhancedPrompt = await enhancePrompt(prompt);
       setPrompt(enhancedPrompt);
-      toast.success('Prompt enhanced with Gemini 2.0');
+      toast.success('Prompt enhanced successfully!');
     } catch (error) {
       toast.error('Failed to enhance prompt');
       console.error('Enhance prompt error:', error);
@@ -107,7 +107,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
                   ? 'bg-purple-100 text-purple-500 hover:bg-purple-200'
                   : 'bg-muted text-muted-foreground cursor-not-allowed'
             )}
-            title="Enhance prompt with Gemini 2.0"
+            title="Enhance prompt!"
           >
             {isEnhancing ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -115,7 +115,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
               <>
                 <Sparkles className="w-5 h-5" />
                 <span className="absolute -top-9 right-0 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Enhance with Gemini
+                  Enhance!
                 </span>
               </>
             )}
