@@ -53,8 +53,8 @@ const ImageAnalysisUploader: React.FC<ImageAnalysisUploaderProps> = ({
         return;
       }
       
-      if (file.size > 4 * 1024 * 1024) { // 4MB limit
-        toast.error('Image size should be less than 4MB');
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit (increased from 4MB)
+        toast.error('Image size should be less than 10MB');
         return;
       }
       

@@ -153,6 +153,9 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({ className }
                 onAnalysisComplete={handleImageAnalysisComplete}
                 className="w-full"
               />
+              <p className="text-xs text-gray-500 mt-1 text-center">
+                Supports JPG, PNG and GIF up to 10MB
+              </p>
             </div>
           )}
           
