@@ -1,6 +1,5 @@
-
 import React, { useState, useRef } from 'react';
-import { Upload, Image as ImageIcon } from 'lucide-react';
+import { Upload, Image as ImageIcon, CloudUpload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -70,30 +69,36 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={cn(
-        'relative flex flex-col items-center justify-center w-full p-12 transition-all duration-300 border-2 border-dashed rounded-lg cursor-pointer',
+        'relative flex flex-col items-center justify-center w-full p-8 sm:p-12 transition-all duration-300 border-2 border-dashed rounded-lg cursor-pointer',
         isDragging 
-          ? 'border-primary bg-primary/5 scale-[1.01]' 
-          : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50',
+          ? 'border-primary bg-primary/5 scale-[1.02] shadow-lg' 
+          : 'border-gray-200 hover:border-primary/40 hover:bg-gray-50/70 shadow-sm',
         className
       )}
     >
-      <div className="flex flex-col items-center justify-center gap-4 text-center">
+      {/* Background gradient for a premium feel */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-50/30 opacity-70"></div>
+      
+      <div className="flex flex-col items-center justify-center gap-4 text-center z-10">
         <div className={cn(
-          'h-12 w-12 rounded-full flex items-center justify-center bg-primary/10',
-          'transition-transform duration-500',
-          isDragging ? 'scale-110' : 'scale-100'
+          'h-14 w-14 rounded-full flex items-center justify-center',
+          'transition-all duration-500 bg-gradient-to-br',
+          isDragging 
+            ? 'from-blue-500 to-indigo-600 scale-110 shadow-lg' 
+            : 'from-blue-400 to-blue-500 scale-100 shadow-md'
         )}>
-          <Upload className="w-6 h-6 text-primary" />
+          <CloudUpload className="w-7 h-7 text-white" />
         </div>
         <div>
           <p className="mb-1 text-lg font-medium">Drag and drop your image here</p>
-          <p className="text-sm text-muted-foreground">Supports JPG, PNG and GIF up to 10MB</p>
+          <p className="text-sm text-gray-500">Supports JPG, PNG and GIF up to 10MB</p>
         </div>
-        <div className="relative mt-4">
+        <div className="relative mt-2">
           <div className={cn(
-            'px-4 py-2 text-sm text-primary border border-primary/20 rounded-lg',
-            'transition-all duration-300 hover:bg-primary/5',
-            'flex items-center gap-2'
+            'px-5 py-2.5 text-sm text-white rounded-lg',
+            'transition-all duration-300 font-medium',
+            'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+            'shadow-sm hover:shadow flex items-center gap-2'
           )}>
             <ImageIcon className="w-4 h-4" />
             <span>Select an image</span>

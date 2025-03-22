@@ -94,9 +94,9 @@ const PromptInput: React.FC<PromptInputProps> = ({
           disabled={isLoading || disabled || isEnhancing}
           rows={1}
           className={cn(
-            'w-full p-4 pr-24 text-sm sm:text-base resize-none overflow-hidden rounded-lg font-hand',
-            'bg-white border border-input focus:ring-2 focus:ring-ring focus:border-input',
-            'transition-all duration-200 outline-none',
+            'w-full p-4 pr-24 text-sm sm:text-base resize-none overflow-hidden rounded-lg font-sans',
+            'bg-white border border-input/50 focus:ring-2 focus:ring-primary/20 focus:border-primary/40',
+            'shadow-sm transition-all duration-200 outline-none',
             'placeholder:text-muted-foreground',
             (isLoading || disabled || isEnhancing) && 'opacity-70 cursor-not-allowed'
           )}
@@ -104,12 +104,12 @@ const PromptInput: React.FC<PromptInputProps> = ({
         
         {/* Animated placeholder that shows when empty */}
         {!prompt && (
-          <div className="absolute left-4 top-4 pointer-events-none font-hand text-sm sm:text-base">
+          <div className="absolute left-4 top-4 pointer-events-none font-sans text-sm sm:text-base text-gray-400">
             <AnimatedPlaceholder suggestions={suggestions} />
           </div>
         )}
         
-        {/* Enhance button */}
+        {/* Enhance button with improved styling */}
         {prompt.trim().length > 0 && (
           <button
             type="button"
@@ -118,10 +118,10 @@ const PromptInput: React.FC<PromptInputProps> = ({
             className={cn(
               'absolute right-12 top-2 p-2 rounded-md',
               'transition-all duration-200 group',
-              isEnhancing ? 'bg-purple-100 text-purple-500' :
+              isEnhancing ? 'bg-indigo-100 text-indigo-600 shadow-sm' :
                 prompt.trim() && !isLoading && !disabled
-                  ? 'bg-purple-100 text-purple-500 hover:bg-purple-200'
-                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 shadow-sm'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             )}
             title="Refine your edit description"
           >
@@ -130,7 +130,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
             ) : (
               <>
                 <Sparkles className="w-5 h-5" />
-                <span className="absolute -top-9 right-0 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                <span className="absolute -top-10 right-0 bg-indigo-50 text-indigo-700 text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm border border-indigo-100">
                   Refine Edit
                 </span>
               </>
@@ -138,7 +138,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
           </button>
         )}
         
-        {/* Submit button */}
+        {/* Submit button with improved styling */}
         <button
           type="submit"
           disabled={!prompt.trim() || isLoading || disabled || isEnhancing}
@@ -146,8 +146,8 @@ const PromptInput: React.FC<PromptInputProps> = ({
             'absolute right-2 top-2 p-2 rounded-md',
             'transition-all duration-200',
             prompt.trim() && !isLoading && !disabled && !isEnhancing
-              ? 'bg-primary text-white hover:bg-primary/90'
-              : 'bg-muted text-muted-foreground cursor-not-allowed'
+              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-sm hover:shadow-md hover:from-blue-700 hover:to-blue-600 active:shadow-inner'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           )}
         >
           <Wand2 className={cn(
