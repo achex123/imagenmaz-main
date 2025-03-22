@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Edit3, Paintbrush, ArrowRight, Sparkles, Camera, Wand2 } from 'lucide-react';
 import { getUsageCount } from '@/lib/imageUtils';
 
@@ -206,15 +206,30 @@ const LandingPage = () => {
         </div>
       </motion.div>
       
-      {/* Footer section */}
+      {/* Footer section - updated with links */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.4 }}
-        className="mt-14 sm:mt-16 text-center text-xs sm:text-sm text-gray-500"
+        className="mt-14 sm:mt-16 text-center"
       >
-        <p>Imagen.Ma - AI Image Generation & Editing</p>
+        <p className="text-xs sm:text-sm text-gray-500">Imagen.Ma - AI Image Generation & Editing</p>
         <p className="mt-1.5 text-xs text-gray-400">Advanced AI for high-quality image creation</p>
+        
+        {/* Legal links */}
+        <div className="mt-4 flex items-center justify-center space-x-4 text-xs text-gray-500">
+          <Link to="/privacy" className="hover:text-blue-600 transition-colors">
+            Privacy Policy
+          </Link>
+          <span className="text-gray-300">|</span>
+          <Link to="/terms" className="hover:text-blue-600 transition-colors">
+            Terms of Use
+          </Link>
+        </div>
+        
+        <p className="mt-3 text-xs text-gray-400">
+          © {new Date().getFullYear()} Imagen.ma. All rights reserved.
+        </p>
       </motion.div>
     </div>
   );

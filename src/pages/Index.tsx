@@ -241,9 +241,7 @@ const Index = () => {
                 isEditing={true}
               />
               
-              <p className="text-xs text-gray-500 italic px-1">
-                Describe how you want to edit your image. Be specific for better results.
-              </p>
+              {/* Removed redundant helper text, keeping only the character counter */}
             </div>
           </div>
         </div>
