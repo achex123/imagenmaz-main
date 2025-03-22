@@ -69,6 +69,16 @@ const Index = () => {
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="text-center mb-6 sm:mb-12 max-w-3xl"
       >
+        {/* Logo image above the welcome message */}
+        <motion.img 
+          src="/imagen.png"
+          alt="Imagen.ma Logo"
+          className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-xl"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        />
+
         <div className="inline-flex items-center justify-center gap-2 px-3 py-1 mb-2 sm:mb-4 text-sm rounded-full bg-primary/10 text-primary">
           <Sparkles className="w-4 h-4" />
           <span>{usageCount === 0 ? 'Welcome!' : `You've created ${usageCount} edit${usageCount === 1 ? '' : 's'}`}</span>
