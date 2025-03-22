@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Download, Loader2, Trash2, Maximize2, Edit3 } from 'lucide-react';
+import { Sparkles, Download, Loader2, Trash2, Maximize2, Edit3, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateImageFromText } from '@/lib/textToImage';
 import { downloadImage, getGenCount, incrementGenCount } from '@/lib/imageUtils';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import PromptInput from './PromptInput';
 import FullScreenImageViewer from './FullScreenImageViewer';
+import ImageAnalysisUploader from './ImageAnalysisUploader';
 
 interface TextToImageGeneratorProps {
   className?: string;
@@ -17,7 +18,11 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({ className }
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [genCount, setGenCount] = useState(0);
+  const [showImageUploader, setShowImageUploader] = useState(false);
+  const [prompt, setPrompt] = useState('');
+  const [analyzeMode, setAnalyzeMode] = useState(false);
   const navigate = useNavigate();
+  const [promptKey, setPromptKey] = useState(0);
   
   // Get and update generation count
   useEffect(() => {
@@ -33,12 +38,14 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({ className }
     return () => clearInterval(checkGenInterval);
   }, [genCount]);
   
-  const handleGenerate = async (prompt: string) => {
-    if (!prompt.trim() || isGenerating) return;
+  const handleGenerate = async (inputPrompt: string) => {
+    if (!inputPrompt.trim() || isGenerating) return;
     
     setIsGenerating(true);
+    setPrompt(inputPrompt);
+    
     try {
-      const result = await generateImageFromText(prompt);
+      const result = await generateImageFromText(inputPrompt);
       
       if (result.success && result.data.imageUrl) {
         setGeneratedImage(result.data.imageUrl);
@@ -89,17 +96,65 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({ className }
     }
   };
   
+  const handleImageAnalysisComplete = (imageUrl: string, description: string) => {
+    // Set the generated description as the prompt
+    setPrompt(description);
+    setAnalyzeMode(false);
+    setShowImageUploader(false);
+    
+    // Show a toast with a small preview
+    toast.success(
+      <div className="flex items-start gap-3">
+        <img 
+          src={imageUrl} 
+          alt="Reference" 
+          className="w-12 h-12 object-cover rounded-md" 
+        />
+        <div>
+          <p className="font-medium text-sm">Image analyzed with Gemini</p>
+          <p className="text-xs text-gray-500">Description has been added to the prompt field</p>
+        </div>
+      </div>
+    );
+    
+    // Force update PromptInput component by using a key
+    setPromptKey(prev => prev + 1);
+  };
+  
+  const toggleImageUploader = () => {
+    setShowImageUploader(!showImageUploader);
+    setAnalyzeMode(true);
+  };
+  
   return (
     <div className={cn('w-full max-w-3xl mx-auto', className)}>
       <div className="premium-card p-1 overflow-hidden">
         <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 sm:p-7">
           {/* Usage counter for generations */}
-          <div className="mb-4 flex justify-center">
+          <div className="mb-4 flex justify-between items-center">
             <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 text-xs sm:text-sm rounded-full bg-purple-100/70 text-purple-600 border border-purple-200/50 shadow-sm">
               <Sparkles className="w-3.5 h-3.5" />
               <span>{genCount === 0 ? 'First generation' : `${genCount} ${genCount === 1 ? 'image' : 'images'} generated`}</span>
             </div>
+            
+            <button
+              onClick={toggleImageUploader}
+              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              {showImageUploader ? 'Hide Image Uploader' : 'Use Reference Image'}
+            </button>
           </div>
+          
+          {/* Image analysis uploader - conditionally shown */}
+          {showImageUploader && (
+            <div className="mb-5">
+              <ImageAnalysisUploader 
+                onAnalysisComplete={handleImageAnalysisComplete}
+                className="w-full"
+              />
+            </div>
+          )}
           
           {/* Title section - simplified */}
           <div className="mb-4 text-center">
@@ -116,8 +171,14 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({ className }
                 <img 
                   src={generatedImage} 
                   alt="Generated image" 
-                  className="w-full h-auto max-h-[400px] object-contain"
+                  className="w-full h-auto max-h-[500px] object-contain" // Increased max height
+                  loading="lazy" // Add lazy loading for larger images
                 />
+                
+                {/* Image info badge */}
+                <div className="absolute top-2 left-14 bg-black/20 backdrop-blur-sm rounded-full px-2 py-1 text-xs text-white opacity-70">
+                  High Quality
+                </div>
                 
                 {/* Fullscreen indicator */}
                 <div className="absolute top-2 left-2 bg-black/20 backdrop-blur-sm rounded-full p-1.5 text-white opacity-60 group-hover:opacity-80 transition-opacity duration-200 shadow-sm">
@@ -171,15 +232,18 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({ className }
           {/* Use the improved PromptInput component */}
           <div className="space-y-3">
             <PromptInput 
+              key={promptKey} // Add key to force re-render when prompt changes
               onSubmit={handleGenerate} 
               isLoading={isGenerating}
               disabled={isGenerating} 
               isEditing={false} // This is for text-to-image generation, not editing
-              // No originalImage needed for text-to-image
+              defaultValue={prompt} // Pass the prompt from image analysis
             />
             
             <p className="text-center text-xs text-gray-500 italic">
-              Image generation may take 10-20 seconds.
+              {analyzeMode 
+                ? 'Review the Gemini-generated description and click Generate to create a similar image' 
+                : 'Image generation may take 10-20 seconds.'}
             </p>
           </div>
           

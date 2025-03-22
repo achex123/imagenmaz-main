@@ -28,11 +28,12 @@ export const generateImageFromText = async (prompt: string): Promise<TextToImage
     // Use the correct endpoint and model for image generation
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${API_KEY}`;
     
-    // Use the correct request format as shown in the example
+    // Fixed request body that follows the correct API format 
+    // Removed invalid imageGenerationParams field
     const requestData = {
       contents: [{
         parts: [{
-          text: prompt
+          text: prompt + " (Ultra high quality, 4K detailed image with realistic lighting and textures)"
         }]
       }],
       generationConfig: {
@@ -40,7 +41,25 @@ export const generateImageFromText = async (prompt: string): Promise<TextToImage
         temperature: 0.4,
         topP: 0.95,
         topK: 32
-      }
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        }
+      ]
     };
 
     console.log('Sending request to Gemini Image Generation API...');
@@ -81,6 +100,9 @@ export const generateImageFromText = async (prompt: string): Promise<TextToImage
           const imageData = part.inlineData.data;
           const mimeType = part.inlineData.mimeType;
           const imageUrl = `data:${mimeType};base64,${imageData}`;
+          
+          // Log the size of the generated image for debugging
+          console.log(`Generated image data size: ~${Math.round(imageData.length * 0.75 / 1024)} KB`);
           
           return {
             success: true,

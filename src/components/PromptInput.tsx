@@ -24,10 +24,18 @@ const PromptInput: React.FC<PromptInputProps> = ({
   originalImage,
   isEditing = true // Default to editing mode as that's the main use case
 }) => {
+  // Initialize with defaultValue
   const [prompt, setPrompt] = useState(defaultValue);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
+  // Update prompt when defaultValue changes
+  useEffect(() => {
+    if (defaultValue) {
+      setPrompt(defaultValue);
+    }
+  }, [defaultValue]);
+
   // Auto resize the textarea based on content
   useEffect(() => {
     if (textareaRef.current) {
@@ -36,6 +44,13 @@ const PromptInput: React.FC<PromptInputProps> = ({
     }
   }, [prompt]);
   
+  // Auto focus when defaultValue is set
+  useEffect(() => {
+    if (defaultValue && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [defaultValue]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim() && !isLoading && !disabled && !isEnhancing) {

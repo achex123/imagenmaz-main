@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -74,7 +73,7 @@ export const processImageWithGemini = async (
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `Edit this image: ${prompt}`
+              text: `Edit this image: ${prompt} (Make the result high quality, detailed, with realistic lighting)`
             }, {
               inline_data: {
                 mime_type: imageBase64.includes('image/png') ? 'image/png' : 'image/jpeg',
@@ -83,7 +82,10 @@ export const processImageWithGemini = async (
             }]
           }],
           generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"]
+            responseModalities: ["TEXT", "IMAGE"],
+            temperature: 0.2,
+            topP: 0.95,
+            topK: 32
           }
         })
       });
