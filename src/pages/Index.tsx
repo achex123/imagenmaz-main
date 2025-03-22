@@ -87,8 +87,26 @@ const Index = () => {
           <span className="text-shimmer">Imagen.ma</span> - Edit with AI
         </h1>
         <p className="text-muted-foreground text-base sm:text-lg mb-2 sm:mb-4">
-          Transform your photos with the power of AI. Simply upload an image and describe the changes you want.
+          Transform your photos with the power of AI. Create images with better detail, 
+          richer lighting, and diverse art styles from realism to anime.
         </p>
+        
+        {/* SEO-friendly text that's hidden visually but available to search engines */}
+        <div className="sr-only">
+          <h2>High-Quality AI Image Generation</h2>
+          <p>
+            Imagen 3 is our highest quality text-to-image model, capable of generating images 
+            with even better detail, richer lighting and fewer distracting artifacts than 
+            previous models. Enjoy better overall color balance and vibrant visuals.
+          </p>
+          <h2>Diverse Art Styles</h2>
+          <p>
+            Render diverse art styles with greater accuracy – from photo realism to 
+            impressionism, and from abstract to anime. Express your creativity with 
+            high-fidelity detail, richer textures and enhanced details for more visually 
+            compelling images.
+          </p>
+        </div>
       </motion.div>
       
       {/* Main content section */}
@@ -196,6 +214,7 @@ const Index = () => {
         className="mt-6 sm:mt-12 text-center text-xs sm:text-sm text-muted-foreground"
       >
         <p>Imagen.Ma - Powered by Google's Gemini 2.0 Flash AI</p>
+        <p className="mt-1">Advanced AI for high-quality image editing and generation</p>
       </motion.div>
     </div>
   );
