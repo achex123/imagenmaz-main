@@ -1,4 +1,3 @@
-
 /**
  * Converts a File object to a base64 string
  */
@@ -55,19 +54,44 @@ export const addLoadingEffect = (imageUrl: string): Promise<string> => {
 };
 
 /**
- * Get count of usage from localStorage
+ * Get combined count of image edits
  */
 export const getUsageCount = (): number => {
-  const count = localStorage.getItem('gemini-edit-count');
-  return count ? parseInt(count, 10) : 0;
+  const editCount = localStorage.getItem('gemini-edit-count');
+  return editCount ? parseInt(editCount, 10) : 0;
 };
 
 /**
- * Increment usage count in localStorage
+ * Get count of text-to-image generations
+ */
+export const getGenCount = (): number => {
+  const genCount = localStorage.getItem('gemini-gen-count');
+  return genCount ? parseInt(genCount, 10) : 0;
+};
+
+/**
+ * Get total usage count (edits + generations)
+ */
+export const getTotalUsageCount = (): number => {
+  return getUsageCount() + getGenCount();
+};
+
+/**
+ * Increment edit count in localStorage
  */
 export const incrementUsageCount = (): number => {
   const currentCount = getUsageCount();
   const newCount = currentCount + 1;
   localStorage.setItem('gemini-edit-count', newCount.toString());
+  return newCount;
+};
+
+/**
+ * Increment generation count in localStorage
+ */
+export const incrementGenCount = (): number => {
+  const currentCount = getGenCount();
+  const newCount = currentCount + 1;
+  localStorage.setItem('gemini-gen-count', newCount.toString());
   return newCount;
 };

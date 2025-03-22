@@ -1,0 +1,209 @@
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Download, Loader2, Trash2, Maximize2, Edit3 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { generateImageFromText } from '@/lib/textToImage';
+import { downloadImage, getGenCount, incrementGenCount } from '@/lib/imageUtils';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import PromptInput from './PromptInput';
+import FullScreenImageViewer from './FullScreenImageViewer';
+
+interface TextToImageGeneratorProps {
+  className?: string;
+}
+
+const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({ className }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [genCount, setGenCount] = useState(0);
+  const navigate = useNavigate();
+  
+  // Get and update generation count
+  useEffect(() => {
+    setGenCount(getGenCount());
+    
+    const checkGenInterval = setInterval(() => {
+      const count = getGenCount();
+      if (count !== genCount) {
+        setGenCount(count);
+      }
+    }, 5000);
+    
+    return () => clearInterval(checkGenInterval);
+  }, [genCount]);
+  
+  const handleGenerate = async (prompt: string) => {
+    if (!prompt.trim() || isGenerating) return;
+    
+    setIsGenerating(true);
+    try {
+      const result = await generateImageFromText(prompt);
+      
+      if (result.success && result.data.imageUrl) {
+        setGeneratedImage(result.data.imageUrl);
+        // Increment the generation count
+        incrementGenCount();
+        setGenCount(getGenCount());
+        toast.success('Image generated successfully');
+      } else {
+        toast.error(result.data.message || 'Failed to generate image');
+      }
+    } catch (error) {
+      console.error('Generation error:', error);
+      
+      // More descriptive error message
+      let errorMessage = 'An error occurred during image generation';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage, {
+        description: 'Please try a different prompt or try again later.'
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
+  const handleDownload = () => {
+    if (generatedImage) {
+      downloadImage(generatedImage, 'generated-image.jpg');
+      toast.success('Image downloaded successfully');
+    }
+  };
+  
+  const handleClear = () => {
+    setGeneratedImage(null);
+  };
+
+  const handleEditInEditor = () => {
+    if (generatedImage) {
+      // Store the generated image in sessionStorage to retrieve it in the editor
+      sessionStorage.setItem('editImage', generatedImage);
+      // Navigate to the editor page
+      navigate('/editor?source=text-to-image');
+      toast.success('Image sent to editor', {
+        description: 'You can now make further edits to your generated image'
+      });
+    }
+  };
+  
+  return (
+    <div className={cn('w-full max-w-3xl mx-auto', className)}>
+      <div className="premium-card p-1 overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 sm:p-7">
+          {/* Usage counter for generations */}
+          <div className="mb-4 flex justify-center">
+            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 text-xs sm:text-sm rounded-full bg-purple-100/70 text-purple-600 border border-purple-200/50 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{genCount === 0 ? 'First generation' : `${genCount} ${genCount === 1 ? 'image' : 'images'} generated`}</span>
+            </div>
+          </div>
+          
+          {/* Title section - simplified */}
+          <div className="mb-4 text-center">
+            <h2 className="text-2xl font-bold mb-2">AI Image Creator</h2>
+          </div>
+          
+          {/* Result display with edit button */}
+          {generatedImage && (
+            <div className="mb-6">
+              <div 
+                className="relative rounded-lg overflow-hidden bg-gray-100/70 shadow-md cursor-zoom-in"
+                onClick={() => setIsFullScreen(true)}
+              >
+                <img 
+                  src={generatedImage} 
+                  alt="Generated image" 
+                  className="w-full h-auto max-h-[400px] object-contain"
+                />
+                
+                {/* Fullscreen indicator */}
+                <div className="absolute top-2 left-2 bg-black/20 backdrop-blur-sm rounded-full p-1.5 text-white opacity-60 group-hover:opacity-80 transition-opacity duration-200 shadow-sm">
+                  <Maximize2 className="w-4 h-4" />
+                </div>
+                
+                <div className="absolute top-2 right-2 flex space-x-2">
+                  {/* New Edit button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditInEditor();
+                    }}
+                    className="p-2 bg-blue-500 text-white rounded-full shadow-sm hover:bg-blue-600 transition-colors"
+                    title="Edit in Image Editor"
+                  >
+                    <Edit3 className="w-5 h-5" />
+                  </button>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload();
+                    }}
+                    className="p-2 bg-primary text-white rounded-full shadow-sm hover:bg-primary/90 transition-colors"
+                    title="Download image"
+                  >
+                    <Download className="w-5 h-5" />
+                  </button>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleClear();
+                    }}
+                    className="p-2 bg-red-500/80 text-white rounded-full shadow-sm hover:bg-red-500 transition-colors"
+                    title="Clear image"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                {/* Add edit button tooltip/label at bottom of image */}
+                <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-xs py-1.5 px-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  Click to view fullscreen or use buttons to edit/download
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Use the improved PromptInput component */}
+          <div className="space-y-3">
+            <PromptInput 
+              onSubmit={handleGenerate} 
+              isLoading={isGenerating}
+              disabled={isGenerating} 
+              isEditing={false} // This is for text-to-image generation, not editing
+              // No originalImage needed for text-to-image
+            />
+            
+            <p className="text-center text-xs text-gray-500 italic">
+              Image generation may take 10-20 seconds.
+            </p>
+          </div>
+          
+          {/* Fullscreen viewer with edit button */}
+          {generatedImage && (
+            <FullScreenImageViewer
+              imageUrl={generatedImage}
+              isOpen={isFullScreen}
+              onClose={() => setIsFullScreen(false)}
+              onDownload={handleDownload}
+              extraActions={[
+                {
+                  icon: <Edit3 className="w-5 h-5" />,
+                  label: "Edit in Image Editor",
+                  onClick: handleEditInEditor,
+                  className: "bg-blue-600/80 hover:bg-blue-600"
+                }
+              ]}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TextToImageGenerator;

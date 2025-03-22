@@ -45,26 +45,28 @@ interface OpenRouterResponse {
 
 /**
  * Enhances a prompt using Mistral Small model with image context awareness
+ * Works for both image editing and text-to-image generation
  * 
  * @param prompt - The original prompt to enhance
  * @param originalImage - Optional base64 or URL of the original image to consider
+ * @param isEditing - Whether this is for image editing (true) or text-to-image (false)
  * @returns Enhanced prompt text
  */
 export async function enhancePromptWithMistral(
   prompt: string,
-  originalImage?: string
+  originalImage?: string,
+  isEditing: boolean = true
 ): Promise<string> {
   if (!OPENROUTER_API_KEY) {
     throw new ApiKeyMissingError();
   }
 
-  // Create a more sophisticated system prompt that instructs the model
-  // to consider both the user's text and image context
-  const systemPrompt = 
+  // Create system prompts specific to the use case
+  const systemPromptImageEditor = 
     'You are an expert image editing assistant similar to Midjourney. ' +
-    'Your task is to enhance user prompts to make them more specific, detailed, and effective for AI image editors. ' +
-    'The user will provide a basic edit request, and possibly an image. ' +
-    'Your goal is to create a refined, professional prompt that addresses precisely what needs to be changed in the image, ' +
+    'Your task is to enhance user prompts for AI image editors that modify existing images. ' +
+    'The user will provide a basic edit request, and possibly an image context. ' +
+    'Your goal is to create a refined, professional prompt that addresses precisely what needs to be changed ' +
     'using language that AI image editors can effectively interpret. ' +
     '\n\n' +
     'Guidelines for prompt enhancement:' +
@@ -73,25 +75,50 @@ export async function enhancePromptWithMistral(
     '\n3. Include relevant artistic direction - suggest aesthetic improvements' +
     '\n4. IMPORTANT: Never add elements that might not exist in the original image' +
     '\n5. Keep the enhanced prompt concise yet detailed (60-90 words max)' +
-    '\n6. Use precise descriptive language that AI image models respond well to' +
+    '\n6. Use precise descriptive language that AI image editors respond well to' +
     '\n7. Respond ONLY with the enhanced prompt, without explanations or comments';
+
+  const systemPromptTextToImage = 
+    'You are an expert text-to-image prompt engineer. ' +
+    'Your task is to enhance user prompts for AI image generation from scratch (not editing). ' +
+    'The user will provide a basic description of what they want to create. ' +
+    'Your goal is to transform this into a high-quality prompt that will produce beautiful, detailed images. ' +
+    '\n\n' +
+    'Guidelines for prompt enhancement:' +
+    '\n1. Expand on the user\'s vision with rich visual details' +
+    '\n2. Add specific artistic direction - style, mood, lighting, composition' +
+    '\n3. Include technical elements like camera angle, lens type, rendering style' +
+    '\n4. Maintain the user\'s core concept while adding depth and clarity' +
+    '\n5. Keep the enhanced prompt concise yet detailed (60-100 words max)' +
+    '\n6. Use descriptive language that AI image generators respond well to' +
+    '\n7. Respond ONLY with the enhanced prompt, without explanations or comments';
+
+  // Select the appropriate system prompt based on the use case
+  const systemPrompt = isEditing ? systemPromptImageEditor : systemPromptTextToImage;
 
   // Determine if we have image context and craft the user message accordingly
   let userMessage: string;
-  if (originalImage && originalImage.length > 0) {
-    // When we have image context, guide the model to consider it
+  if (isEditing && originalImage && originalImage.length > 0) {
+    // For image editing with image context
     userMessage = 
       `I want to edit this specific image with the following request: "${prompt}".\n\n` +
       `Based on both my request and what's likely in the image, please enhance this prompt with specific, ` +
       `detailed editing directions while preserving the original intent. Consider potential visual elements ` +
       `like subjects, lighting, colors, and composition when refining the instruction.`;
-  } else {
-    // Without image context, focus on the prompt itself
+  } else if (isEditing) {
+    // For image editing without image context
     userMessage = 
       `I want to edit an image with this request: "${prompt}".\n\n` +
       `Please transform this basic request into a detailed, specific editing prompt that ` +
       `AI image editors would understand better. Add technical precision and artistic direction ` +
       `while keeping the original intent intact.`;
+  } else {
+    // For text-to-image generation
+    userMessage = 
+      `I want to generate a new image with this description: "${prompt}".\n\n` +
+      `Please enhance this description into a detailed, high-quality prompt that will create ` +
+      `an impressive image when fed to an AI text-to-image generator. Add details about style, ` +
+      `mood, lighting, perspective, and other elements that will result in a beautiful image.`;
   }
 
   // Create the request data with more nuanced parameters
@@ -107,7 +134,7 @@ export async function enhancePromptWithMistral(
         content: userMessage
       }
     ],
-    temperature: 0.4,  // Slightly increased for more creative language
+    temperature: isEditing ? 0.3 : 0.5,  // Higher temperature for creative text-to-image prompts
     max_tokens: 250    // Limited to ensure concise responses
   };
 

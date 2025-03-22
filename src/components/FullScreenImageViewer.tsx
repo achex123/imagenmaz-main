@@ -1,19 +1,29 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Download, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { cn } from '@/lib/utils'; // Added missing import
+
+interface ExtraAction {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  className?: string;
+}
 
 interface FullScreenImageViewerProps {
   imageUrl: string;
   isOpen: boolean;
   onClose: () => void;
   onDownload?: () => void;
+  extraActions?: ExtraAction[];
 }
 
 const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   imageUrl,
   isOpen,
   onClose,
-  onDownload
+  onDownload,
+  extraActions = []
 }) => {
   const [scale, setScale] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -330,6 +340,24 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
         >
           <RotateCw className="w-5 h-5" />
         </button>
+        
+        {extraActions.map((action, index) => (
+          <button
+            key={`extra-action-${index}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick();
+            }}
+            className={cn(
+              "p-3 sm:p-2 text-white backdrop-blur-md rounded-full transition-colors",
+              action.className || "bg-primary/80 hover:bg-primary"
+            )}
+            aria-label={action.label}
+            title={action.label}
+          >
+            {action.icon}
+          </button>
+        ))}
         
         {onDownload && (
           <button

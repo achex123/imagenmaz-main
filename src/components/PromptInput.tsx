@@ -11,7 +11,8 @@ interface PromptInputProps {
   defaultValue?: string;
   className?: string;
   disabled?: boolean;
-  originalImage?: string; // Add originalImage prop
+  originalImage?: string;
+  isEditing?: boolean;
 }
 
 const PromptInput: React.FC<PromptInputProps> = ({
@@ -20,22 +21,12 @@ const PromptInput: React.FC<PromptInputProps> = ({
   defaultValue = '',
   className,
   disabled = false,
-  originalImage  // Original image for context-aware enhancement
+  originalImage,
+  isEditing = true // Default to editing mode as that's the main use case
 }) => {
   const [prompt, setPrompt] = useState(defaultValue);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
-  // Example suggestions for the placeholder
-  const suggestions = [
-    "Turn this photo into a watercolor painting",
-    "Make the background blurry",
-    "Change the sky to a sunset",
-    "Make it look like a professional portrait",
-    "Give it a cinematic color grade",
-    "Apply a vintage film effect",
-    "Remove the background completely"
-  ];
   
   // Auto resize the textarea based on content
   useEffect(() => {
@@ -49,25 +40,28 @@ const PromptInput: React.FC<PromptInputProps> = ({
     e.preventDefault();
     if (prompt.trim() && !isLoading && !disabled && !isEnhancing) {
       onSubmit(prompt.trim());
+      // Don't clear the prompt after submission to allow for iterations
     }
   };
 
-  // Function to enhance the prompt using only Mistral Small via OpenRouter
+  // Function to enhance the prompt using Mistral Small via OpenRouter
   const handleEnhancePrompt = async () => {
     if (!prompt.trim() || isEnhancing || isLoading || disabled) return;
     
     try {
       setIsEnhancing(true);
-      const enhancedPrompt = await enhancePrompt(prompt, originalImage);
+      const enhancedPrompt = await enhancePrompt(prompt, originalImage, isEditing);
       
       // Apply the enhanced prompt
       setPrompt(enhancedPrompt);
       
       // Update toast to reflect Mistral-only enhancement
       toast.success('Prompt enhanced with Mistral AI', {
-        description: originalImage 
-          ? 'Your edit was refined based on image context and text analysis'
-          : 'Your edit description has been refined for better results',
+        description: isEditing 
+          ? (originalImage 
+             ? 'Your edit was refined based on image context and text analysis'
+             : 'Your edit description has been refined for better results')
+          : 'Your description was enhanced for better image generation'
       });
     } catch (error) {
       // Handle API key missing error
@@ -87,21 +81,42 @@ const PromptInput: React.FC<PromptInputProps> = ({
     }
   };
   
+  // Example suggestions for the animated placeholder
+  const suggestions = isEditing ? [
+    "Make the background blurry",
+    "Change the sky to a sunset",
+    "Apply a vintage film effect",
+    "Convert to black and white with high contrast"
+  ] : [
+    "A 3D rendered image of a dragon with vibrant colors",
+    "A photorealistic portrait of a woman with flowers in her hair",
+    "A futuristic cityscape with flying cars at sunset",
+    "A magical forest with glowing mushrooms"
+  ];
+  
   return (
-    <form onSubmit={handleSubmit} className={cn('w-full', className)}>
+    <form onSubmit={handleSubmit} className={cn('w-full space-y-3', className)}>
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-foreground">
+          {isEditing
+            ? "Describe how you want to edit the image"
+            : "Describe the image you want to generate"}
+        </p>
+      </div>
+      
       <div className="relative">
         <textarea
           ref={textareaRef}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder=" "
+          placeholder=" " // Empty placeholder since we're using AnimatedPlaceholder
           disabled={isLoading || disabled || isEnhancing}
           rows={1}
           className={cn(
             'w-full p-4 pr-24 text-sm sm:text-base resize-none overflow-hidden rounded-lg font-sans',
-            'bg-white border border-input/50 focus:ring-2 focus:ring-primary/20 focus:border-primary/40',
+            'bg-white border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary/40',
             'shadow-sm transition-all duration-200 outline-none',
-            'placeholder:text-muted-foreground',
+            'placeholder:text-muted-foreground min-h-[60px]',
             (isLoading || disabled || isEnhancing) && 'opacity-70 cursor-not-allowed'
           )}
         />
@@ -120,22 +135,22 @@ const PromptInput: React.FC<PromptInputProps> = ({
             onClick={handleEnhancePrompt}
             disabled={isLoading || disabled || isEnhancing || !prompt.trim()}
             className={cn(
-              'absolute right-12 top-2 p-2 rounded-md',
+              'absolute right-14 top-2.5 p-2 rounded-md',
               'transition-all duration-200 group',
               isEnhancing ? 'bg-indigo-100 text-indigo-600 shadow-sm' :
                 prompt.trim() && !isLoading && !disabled
                   ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 shadow-sm'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             )}
-            title="Refine your edit description"
+            title="Refine your description"
           >
             {isEnhancing ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                <Sparkles className="w-5 h-5" />
+                <Sparkles className="w-4 h-4" />
                 <span className="absolute -top-10 right-0 bg-indigo-50 text-indigo-700 text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm border border-indigo-100">
-                  Refine Edit
+                  {isEditing ? "Refine Edit" : "Enhance Prompt"}
                 </span>
               </>
             )}
@@ -147,7 +162,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
           type="submit"
           disabled={!prompt.trim() || isLoading || disabled || isEnhancing}
           className={cn(
-            'absolute right-2 top-2 p-2 rounded-md',
+            'absolute right-2.5 top-2.5 p-2 rounded-md',
             'transition-all duration-200',
             prompt.trim() && !isLoading && !disabled && !isEnhancing
               ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-sm hover:shadow-md hover:from-blue-700 hover:to-blue-600 active:shadow-inner'
@@ -155,10 +170,15 @@ const PromptInput: React.FC<PromptInputProps> = ({
           )}
         >
           <Wand2 className={cn(
-            'w-5 h-5',
+            'w-4 h-4',
             isLoading && 'animate-pulse'
           )} />
         </button>
+      </div>
+      
+      <div className="flex justify-between text-xs text-gray-500 px-1">
+        <span className="italic">Be specific about the changes you want to see.</span>
+        <span>{prompt.length} / 500 chars</span>
       </div>
     </form>
   );

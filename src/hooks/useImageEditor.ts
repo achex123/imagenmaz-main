@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { processImageWithGemini } from '@/lib/api';
 import { fileToBase64, incrementUsageCount } from '@/lib/imageUtils';
@@ -22,18 +21,30 @@ export const useImageEditor = () => {
   });
   
   // Handle image selection
-  const handleImageSelected = useCallback(async (file: File) => {
+  const handleImageSelected = useCallback(async (fileOrBase64: File | string) => {
+    setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const imageBase64 = await fileToBase64(file);
+      let base64Image: string;
+      
+      // Check if the input is already a base64 string
+      if (typeof fileOrBase64 === 'string') {
+        base64Image = fileOrBase64;
+      } else {
+        // Convert File to base64
+        base64Image = await fileToBase64(fileOrBase64);
+      }
+      
       setState(prev => ({
         ...prev,
-        originalImage: imageBase64,
+        originalImage: base64Image,
         resultImage: null,
-        originalFile: file
+        originalFile: typeof fileOrBase64 === 'string' ? null : fileOrBase64
       }));
     } catch (error) {
-      console.error('Error converting file to base64:', error);
-      toast.error('Error loading image. Please try again.');
+      console.error('Error loading image:', error);
+      toast.error('Failed to load image. Please try again.');
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
     }
   }, []);
   

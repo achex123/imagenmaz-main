@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, RotateCcw, Download, Cpu } from 'lucide-react';
+import { Sparkles, RotateCcw, Download, Cpu, PenTool, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link, useLocation } from 'react-router-dom';
 
 import DragDropUpload from '@/components/DragDropUpload';
 import ImagePreview from '@/components/ImagePreview';
 import PromptInput from '@/components/PromptInput';
 import { useImageEditor } from '@/hooks/useImageEditor';
-import { downloadImage, getUsageCount } from '@/lib/imageUtils';
+import { downloadImage, getUsageCount, getGenCount } from '@/lib/imageUtils';
 
 const Index = () => {
+  const location = useLocation();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [usageCount, setUsageCount] = useState(0);
   
@@ -48,6 +50,30 @@ const Index = () => {
     return () => clearInterval(checkUsageInterval);
   }, [usageCount]);
   
+  // Check for images from text-to-image on mount
+  useEffect(() => {
+    // Check if there's a stored image from the text-to-image generator
+    const editImage = sessionStorage.getItem('editImage');
+    if (editImage) {
+      // Clear the storage after retrieving the image
+      sessionStorage.removeItem('editImage');
+      
+      // Create a dummy File object or handle the base64 image directly
+      // This depends on how handleImageSelected is implemented
+      const base64Data = editImage;
+      
+      // Process the image
+      handleImageSelected(base64Data);
+      
+      // Show welcome toast if coming from text-to-image page
+      if (location.search.includes('source=text-to-image')) {
+        toast.success('Image ready to edit', {
+          description: 'You can now make edits to your generated image'
+        });
+      }
+    }
+  }, [handleImageSelected, location]);
+  
   const handleDownload = () => {
     if (resultImage) {
       downloadImage(resultImage);
@@ -61,73 +87,61 @@ const Index = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans bg-gradient-to-b from-blue-50/50 to-white">
-      {/* Hero section with better layout and reduced margins */}
+    <div className="min-h-screen flex flex-col items-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans bg-gradient-to-b from-blue-50/50 to-white">
+      {/* Header section with navigation links */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center mb-3 sm:mb-6 max-w-3xl" // Reduced bottom margin
+        className="w-full max-w-4xl mb-8"
       >
-        {/* Combined logo and usage count for better layout */}
-        <div className="flex flex-col items-center justify-center mb-2"> {/* Reduced margin */}
-          {/* Logo with glow effect */}
-          <motion.div 
-            className="relative mb-2" // Reduced margin
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+        {/* Navigation links - now matching Text-to-Image layout */}
+        <div className="flex justify-between items-center mb-6">
+          <Link 
+            to="/" 
+            className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors"
           >
-            <div className="absolute inset-0 rounded-2xl bg-blue-600/10 blur-lg"></div>
-            <img 
-              src="/imagen.png"
-              alt="Imagen.ma Logo"
-              className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl shadow-md" // Reduced size
-            />
-          </motion.div>
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Back to Home
+          </Link>
           
-          {/* Usage counter moved below logo */}
-          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 text-xs sm:text-sm rounded-full bg-primary/10 text-primary border border-primary/10 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{usageCount === 0 ? 'Welcome!' : `${usageCount} edit${usageCount === 1 ? '' : 's'} created`}</span>
-          </div>
+          <Link 
+            to="/text-to-image"
+            className="inline-flex items-center text-sm text-purple-600 hover:text-purple-800 transition-colors"
+          >
+            <PenTool className="w-4 h-4 mr-1" />
+            Switch to Text-to-Image
+          </Link>
         </div>
         
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 sm:mb-2"> {/* Reduced size and margin */}
-          <span className="mesh-gradient-text">Imagen.ma</span> <span className="opacity-90">- Edit with AI</span>
-        </h1>
-        
-        <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto text-balance"> {/* Reduced font size */}
-          Transform your photos with the power of AI. Upload an image and describe the changes you want.
-        </p>
-        
-        {/* SEO-friendly hidden text - untouched */}
-        <div className="sr-only">
-          <h2>High-Quality AI Image Generation</h2>
-          <p>
-            Imagen 3 is our highest quality text-to-image model, capable of generating images 
-            with even better detail, richer lighting and fewer distracting artifacts than 
-            previous models. Enjoy better overall color balance and vibrant visuals.
-          </p>
-          <h2>Diverse Art Styles</h2>
-          <p>
-            Render diverse art styles with greater accuracy – from photo realism to 
-            impressionism, and from abstract to anime. Express your creativity with 
-            high-fidelity detail, richer textures and enhanced details for more visually 
-            compelling images.
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+            <span className="mesh-gradient-text">Image Editor</span>
+          </h1>
+          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto text-balance">
+            Transform your photos with the power of AI. Upload an image and describe the changes you want.
           </p>
         </div>
       </motion.div>
       
-      {/* Main content section - closer to the hero with reduced animation delay */}
+      {/* Main content section - hide usage count from here, moved to landing page */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} // Reduced delay
+        transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-4xl"
       >
         <div className="premium-card p-1 overflow-hidden">
           <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 sm:p-7 lg:p-9">
+            {/* Usage counter with improved layout */}
+            <div className="mb-4 flex justify-center">
+              <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 text-xs sm:text-sm rounded-full bg-blue-100/70 text-blue-600 border border-blue-200/50 shadow-sm">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{usageCount === 0 ? 'First edit' : `${usageCount} ${usageCount === 1 ? 'edit' : 'edits'}`}</span>
+              </div>
+            </div>
+            
             {/* Image section */}
             <div className="grid grid-cols-1 gap-5 sm:gap-7 mb-5 sm:mb-7 sm:grid-cols-2">
               {/* Original image section */}
@@ -223,7 +237,8 @@ const Index = () => {
                 onSubmit={processImage} 
                 isLoading={isLoading}
                 disabled={!originalImage || isLoading}
-                originalImage={originalImage} // Pass original image for context
+                originalImage={originalImage}
+                isEditing={true}
               />
               
               <p className="text-xs text-gray-500 italic px-1">
