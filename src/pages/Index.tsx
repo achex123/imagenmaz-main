@@ -223,6 +223,7 @@ const Index = () => {
                 onSubmit={processImage} 
                 isLoading={isLoading}
                 disabled={!originalImage || isLoading}
+                originalImage={originalImage} // Pass original image for context
               />
               
               <p className="text-xs text-gray-500 italic px-1">

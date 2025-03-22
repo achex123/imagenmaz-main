@@ -11,6 +11,7 @@ interface PromptInputProps {
   defaultValue?: string;
   className?: string;
   disabled?: boolean;
+  originalImage?: string; // Add originalImage prop
 }
 
 const PromptInput: React.FC<PromptInputProps> = ({
@@ -18,7 +19,8 @@ const PromptInput: React.FC<PromptInputProps> = ({
   isLoading = false,
   defaultValue = '',
   className,
-  disabled = false
+  disabled = false,
+  originalImage  // Original image for context-aware enhancement
 }) => {
   const [prompt, setPrompt] = useState(defaultValue);
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -50,20 +52,22 @@ const PromptInput: React.FC<PromptInputProps> = ({
     }
   };
 
-  // Function to enhance the prompt using Gemini 1.5 Flash
+  // Function to enhance the prompt using Mistral Small via OpenRouter
   const handleEnhancePrompt = async () => {
     if (!prompt.trim() || isEnhancing || isLoading || disabled) return;
     
     try {
       setIsEnhancing(true);
-      const enhancedPrompt = await enhancePrompt(prompt);
+      const enhancedPrompt = await enhancePrompt(prompt, originalImage);
       
       // Apply the enhanced prompt
       setPrompt(enhancedPrompt);
       
-      // Show success message with clearer explanation
+      // Update toast to reflect image-aware enhancement
       toast.success('Prompt enhanced', {
-        description: 'Your edit description has been refined for better results',
+        description: originalImage 
+          ? 'Your edit was refined based on both text and image context'
+          : 'Your edit description has been refined for better results',
       });
     } catch (error) {
       // Handle specific API key missing error
