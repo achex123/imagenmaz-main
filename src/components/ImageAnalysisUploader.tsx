@@ -8,11 +8,13 @@ import { toast } from 'sonner';
 interface ImageAnalysisUploaderProps {
   onAnalysisComplete: (imageUrl: string, description: string) => void;
   className?: string;
+  darkMode?: boolean;
 }
 
 const ImageAnalysisUploader: React.FC<ImageAnalysisUploaderProps> = ({ 
   onAnalysisComplete,
-  className
+  className,
+  darkMode = true
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -113,36 +115,36 @@ const ImageAnalysisUploader: React.FC<ImageAnalysisUploaderProps> = ({
   
   if (uploadedImage) {
     return (
-      <div className={cn("w-full rounded-lg overflow-hidden", className)}>
+      <div className={cn("w-full rounded-xl overflow-hidden", className)}>
         <div className="relative">
           <img 
             src={uploadedImage}
             alt="Preview" 
-            className="w-full h-auto max-h-[200px] object-contain bg-gray-100 rounded-t-lg"
+            className="w-full h-auto max-h-[200px] object-contain bg-zinc-800 rounded-t-xl border-b border-zinc-700/50"
           />
           
           <button
             onClick={handleCancel}
-            className="absolute top-2 right-2 p-1.5 bg-black/30 text-white rounded-full hover:bg-black/50 transition-colors"
+            className="absolute top-2 right-2 p-1.5 bg-black/50 text-white/90 rounded-full hover:bg-black/70 transition-colors border border-white/10"
             disabled={isAnalyzing}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
         
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-b-lg border-t border-gray-100">
+        <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-4 rounded-b-xl border-t border-zinc-700/50">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">Use AI to analyze this image</p>
+            <p className="text-sm font-medium text-zinc-300">Use AI to analyze this image</p>
             
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing}
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium",
-                "transition-all duration-200",
+                "transition-all duration-200 shadow-md",
                 isAnalyzing 
-                  ? "bg-indigo-100 text-indigo-500 cursor-not-allowed"
-                  : "bg-indigo-500 text-white hover:bg-indigo-600"
+                  ? "bg-indigo-900/50 text-indigo-300 cursor-not-allowed border border-indigo-800/50"
+                  : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500 border border-indigo-500/30"
               )}
             >
               {isAnalyzing ? (
@@ -159,7 +161,7 @@ const ImageAnalysisUploader: React.FC<ImageAnalysisUploaderProps> = ({
             </button>
           </div>
           
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-zinc-500 mt-2">
             The AI will analyze this image and create a description to generate a similar image
           </p>
         </div>
@@ -174,21 +176,21 @@ const ImageAnalysisUploader: React.FC<ImageAnalysisUploaderProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={cn(
-        "relative flex flex-col items-center justify-center p-5 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-300",
+        "relative flex flex-col items-center justify-center p-5 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300",
         isDragging 
-          ? "border-purple-400 bg-purple-50 scale-[1.01]"
-          : "border-gray-200 hover:border-purple-300 hover:bg-gray-50/70",
+          ? "border-indigo-500/70 bg-indigo-900/20 scale-[1.01]"
+          : "border-zinc-700 hover:border-indigo-500/50 hover:bg-zinc-800/50",
         className
       )}
     >
       <div className="flex flex-col items-center justify-center text-center">
-        <div className="p-3 bg-purple-100 rounded-full mb-3">
-          <Camera className="w-5 h-5 text-purple-600" />
+        <div className="p-3.5 bg-indigo-900/40 rounded-full mb-4 border border-indigo-700/50 shadow-inner">
+          <Camera className="w-5 h-5 text-indigo-300" />
         </div>
-        <p className="text-sm font-medium mb-1">Upload an image for inspiration</p>
-        <p className="text-xs text-gray-500 mb-3">AI will analyze it and create a similar image</p>
+        <p className="text-sm font-medium mb-1 text-zinc-300">Upload an image for inspiration</p>
+        <p className="text-xs text-zinc-500 mb-3">AI will analyze it and create a similar image</p>
         
-        <div className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-md text-xs text-gray-700 font-medium transition-colors">
+        <div className="px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-300 font-medium transition-colors border border-zinc-700/80">
           Select Image
         </div>
       </div>

@@ -4,35 +4,48 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
-
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.5rem;
+  }
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
-
-    --radius: 1rem;
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 24 9.8% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.4 71.8% 29.2%;
   }
 
   * {
@@ -41,8 +54,8 @@
   }
 
   body {
-    @apply bg-gradient-to-b from-background to-background/90 text-foreground antialiased overflow-x-hidden min-h-screen;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
     background-attachment: fixed;
   }
   
@@ -176,6 +189,174 @@
   
   .zoom-indicator {
     animation: gentle-pulse 2s ease-in-out infinite;
+  }
+
+  /* macOS Dark Theme Custom Styles - updated: purple → gray */
+  .mac-card {
+    background: linear-gradient(120deg, rgba(99, 102, 241, 0.2), rgba(113, 113, 122, 0.2));
+    border-radius: 0.75rem;
+    position: relative;
+    z-index: 1;
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset, 
+      0 20px 25px -5px rgba(0, 0, 0, 0.2),
+      0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .mac-gradient-text {
+    background: linear-gradient(to right, #6366f1, #71717a, #e5e5e5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+  }
+
+  /* Text glow effect for headings */
+  .text-glow {
+    text-shadow: 0 0 10px rgba(99, 102, 241, 0.7), 
+                 0 0 20px rgba(99, 102, 241, 0.3);
+  }
+
+  /* Better shimmer animation */
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
+  }
+
+  /* Blink animation for cursor */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
+
+  /* Custom scrollbar for macOS feel */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: rgb(24, 24, 27, 0.1);
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(99, 102, 241, 0.5);
+  }
+
+  /* Mesh gradient for buttons - updated: purple → gray */
+  .mesh-gradient-button {
+    background-image: 
+      radial-gradient(at 100% 0%, hsla(240, 5%, 65%, 0.3) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, hsla(225, 5%, 75%, 0.4) 0px, transparent 50%);
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+  }
+
+  .mesh-gradient-button:hover {
+    background-image: 
+      radial-gradient(at 100% 0%, hsla(240, 5%, 65%, 0.7) 0px, transparent 70%),
+      radial-gradient(at 0% 0%, hsla(225, 5%, 75%, 0.7) 0px, transparent 70%);
+  }
+
+  /* Glass effect for cards and modals */
+  .glass-effect {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background-color: rgba(24, 24, 27, 0.7);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  }
+
+  /* Liquid button reflection effect */
+  .liquid-button {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-button::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      rgba(255, 255, 255, 0.13),
+      rgba(255, 255, 255, 0)
+    );
+    transform: rotate(30deg);
+    pointer-events: none;
+    transition: transform 0.5s ease;
+  }
+
+  .liquid-button:hover::after {
+    transform: rotate(30deg) translate(10%, 10%);
+  }
+
+  /* Animation for radial hover effect */
+  @keyframes radial-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(113, 113, 122, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(113, 113, 122, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(113, 113, 122, 0);
+    }
+  }
+
+  .hover-radial-pulse:hover {
+    animation: radial-pulse 1.5s infinite;
+  }
+
+  /* Custom toast styles */
+  .custom-toast {
+    @apply bg-zinc-800 text-zinc-200 border border-zinc-700/50 backdrop-blur-md shadow-lg;
+  }
+
+  /* Toast animation */
+  .toast-enter {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  .toast-enter-active {
+    transform: translateX(0);
+    opacity: 1;
+    transition: transform 300ms ease, opacity 300ms ease;
+  }
+
+  .toast-exit {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .toast-exit-active {
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: transform 300ms ease, opacity 300ms ease;
   }
 }
 

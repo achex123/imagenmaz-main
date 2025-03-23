@@ -13,6 +13,7 @@ interface PromptInputProps {
   disabled?: boolean;
   originalImage?: string;
   isEditing?: boolean;
+  darkMode?: boolean;
 }
 
 const PromptInput: React.FC<PromptInputProps> = ({
@@ -22,7 +23,8 @@ const PromptInput: React.FC<PromptInputProps> = ({
   className,
   disabled = false,
   originalImage,
-  isEditing = true // Default to editing mode as that's the main use case
+  isEditing = true, // Default to editing mode as that's the main use case
+  darkMode = false
 }) => {
   // Initialize with defaultValue
   const [prompt, setPrompt] = useState(defaultValue);
@@ -33,21 +35,46 @@ const PromptInput: React.FC<PromptInputProps> = ({
   useEffect(() => {
     if (defaultValue) {
       setPrompt(defaultValue);
+      // Auto resize when default value is set
+      if (textareaRef.current) {
+        autoResizeTextarea(textareaRef.current);
+      }
     }
   }, [defaultValue]);
 
-  // Auto resize the textarea based on content
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+  // Auto resize the textarea based on content and scroll to bottom
+  const autoResizeTextarea = (element: HTMLTextAreaElement) => {
+    // Reset height to auto to get proper scrollHeight
+    element.style.height = 'auto';
+    // Set to scrollHeight to expand the textarea
+    element.style.height = `${element.scrollHeight}px`;
+    // Ensure it doesn't get too tall
+    const maxHeight = 300; // max height in pixels
+    if (element.scrollHeight > maxHeight) {
+      element.style.height = `${maxHeight}px`;
+      element.style.overflowY = 'auto';
+      // Scroll to bottom
+      element.scrollTop = element.scrollHeight;
+    } else {
+      element.style.overflowY = 'hidden';
     }
-  }, [prompt]);
+  };
   
-  // Auto focus when defaultValue is set
+  // Handle input changes for textarea
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPrompt(e.target.value);
+    autoResizeTextarea(e.target);
+  };
+
+  // Auto focus and scroll to end when defaultValue is set
   useEffect(() => {
     if (defaultValue && textareaRef.current) {
       textareaRef.current.focus();
+      autoResizeTextarea(textareaRef.current);
+      
+      // Set cursor at end of text
+      const length = defaultValue.length;
+      textareaRef.current.setSelectionRange(length, length);
     }
   }, [defaultValue]);
 
@@ -70,24 +97,34 @@ const PromptInput: React.FC<PromptInputProps> = ({
       // Apply the enhanced prompt
       setPrompt(enhancedPrompt);
       
-      // Update toast to reflect Mistral-only enhancement
-      toast.success('Prompt enhanced with Mistral AI', {
-        description: isEditing 
-          ? (originalImage 
-             ? 'Your edit was refined based on image context and text analysis'
-             : 'Your edit description has been refined for better results')
-          : 'Your description was enhanced for better image generation'
+      // Update textarea height after enhancing
+      setTimeout(() => {
+        if (textareaRef.current) {
+          autoResizeTextarea(textareaRef.current);
+          // Scroll to bottom to show latest content
+          textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+        }
+      }, 10);
+      
+      // Success toast
+      toast.success('Prompt enhanced with AI', {
+        duration: 1500,
+        position: 'top-left'
       });
     } catch (error) {
       // Handle API key missing error
       if ((error as Error).name === 'ApiKeyMissingError') {
         toast.error('API key missing', {
-          description: 'Please add your OpenRouter API key to the .env file'
+          description: 'Please add your OpenRouter API key to the .env file',
+          duration: 1500,
+          position: 'top-left'
         });
       } else {
         // Handle generic errors
         toast.error('Failed to enhance prompt', {
-          description: 'Please try again or continue with your original prompt'
+          description: 'Please try again or continue with your original prompt',
+          duration: 1500,
+          position: 'top-left'
         });
       }
       console.error('Enhance prompt error:', error);
@@ -110,92 +147,93 @@ const PromptInput: React.FC<PromptInputProps> = ({
   ];
   
   return (
-    <form onSubmit={handleSubmit} className={cn('w-full space-y-3', className)}>
-      <div className="space-y-2">
-        <p className="text-sm font-medium text-foreground">
-          {isEditing
-            ? "Describe how you want to edit the image"
-            : "Describe the image you want to generate"}
-        </p>
-      </div>
-      
+    <div className={cn('w-full', className)}>
+      {/* Textarea for input with auto-resize */}
       <div className="relative">
         <textarea
           ref={textareaRef}
           value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
+          onChange={handleTextareaChange}
           placeholder=" " // Empty placeholder since we're using AnimatedPlaceholder
           disabled={isLoading || disabled || isEnhancing}
           rows={1}
           className={cn(
-            'w-full p-4 pr-24 text-sm sm:text-base resize-none overflow-hidden rounded-lg font-sans',
-            'bg-white border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary/40',
-            'shadow-sm transition-all duration-200 outline-none',
-            'placeholder:text-muted-foreground min-h-[60px]',
+            'w-full p-4 text-sm sm:text-base resize-none rounded-lg font-sans min-h-[6rem]',
+            'focus:ring-2 focus:ring-opacity-50 transition-all duration-200 outline-none',
+            'shadow-lg',
+            darkMode 
+              ? 'bg-zinc-800/90 border border-zinc-700/60 focus:ring-indigo-500/30 focus:border-indigo-600/40 text-zinc-200 placeholder:text-zinc-500'
+              : 'bg-white border border-gray-200 focus:ring-primary/20 focus:border-primary/40 text-foreground placeholder:text-muted-foreground',
             (isLoading || disabled || isEnhancing) && 'opacity-70 cursor-not-allowed'
           )}
+          style={{ 
+            overflowY: 'hidden', // Will be changed by autoResize function if needed
+            maxHeight: '300px' // Max height for the textarea
+          }}
         />
         
         {/* Animated placeholder that shows when empty */}
         {!prompt && (
-          <div className="absolute left-4 top-4 pointer-events-none font-sans text-sm sm:text-base text-gray-400">
+          <div className={cn(
+            "absolute left-4 top-4 pointer-events-none font-sans text-sm sm:text-base", 
+            darkMode ? "text-zinc-500" : "text-gray-400"
+          )}>
             <AnimatedPlaceholder suggestions={suggestions} />
           </div>
         )}
+      </div>
+      
+      {/* Bottom controls with character count, enhance and submit buttons */}
+      <div className="flex justify-between items-center mt-3">
+        <span className={cn(
+          "text-xs italic",
+          darkMode ? "text-zinc-500" : "text-gray-500"
+        )}>
+          {prompt.length} / 500 chars
+        </span>
         
-        {/* Enhance button with improved styling */}
-        {prompt.trim().length > 0 && (
+        <div className="flex gap-2">
+          {/* Enhance button */}
           <button
             type="button"
             onClick={handleEnhancePrompt}
-            disabled={isLoading || disabled || isEnhancing || !prompt.trim()}
+            disabled={!prompt.trim() || isLoading || disabled || isEnhancing}
             className={cn(
-              'absolute right-14 top-2.5 p-2 rounded-md',
-              'transition-all duration-200 group',
-              isEnhancing ? 'bg-indigo-100 text-indigo-600 shadow-sm' :
-                prompt.trim() && !isLoading && !disabled
-                  ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 shadow-sm'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              "px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sm transition-colors",
+              prompt.trim() && !isLoading && !disabled && !isEnhancing
+                ? "bg-indigo-900/40 text-indigo-300 hover:bg-indigo-900/60 border border-indigo-800/50"
+                : "bg-zinc-800/70 text-zinc-500 cursor-not-allowed border border-zinc-700/50"
             )}
-            title="Refine your description"
           >
             {isEnhancing ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                <span className="absolute -top-10 right-0 bg-indigo-50 text-indigo-700 text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm border border-indigo-100">
-                  {isEditing ? "Refine Edit" : "Enhance Prompt"}
-                </span>
-              </>
+              <Sparkles className="w-4 h-4" />
             )}
+            <span>Enhance</span>
           </button>
-        )}
-        
-        {/* Submit button with improved styling */}
-        <button
-          type="submit"
-          disabled={!prompt.trim() || isLoading || disabled || isEnhancing}
-          className={cn(
-            'absolute right-2.5 top-2.5 p-2 rounded-md',
-            'transition-all duration-200',
-            prompt.trim() && !isLoading && !disabled && !isEnhancing
-              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-sm hover:shadow-md hover:from-blue-700 hover:to-blue-600 active:shadow-inner'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-          )}
-        >
-          <Wand2 className={cn(
-            'w-4 h-4',
-            isLoading && 'animate-pulse'
-          )} />
-        </button>
+          
+          {/* Generate/Submit button */}
+          <button
+            onClick={handleSubmit}
+            disabled={!prompt.trim() || isLoading || disabled || isEnhancing}
+            className={cn(
+              "px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sm transition-colors font-medium",
+              prompt.trim() && !isLoading && !disabled && !isEnhancing
+                ? "bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-500 hover:to-indigo-700 text-white border border-indigo-700/50"
+                : "bg-zinc-800/70 text-zinc-500 cursor-not-allowed border border-zinc-700/50"
+            )}
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Wand2 className="w-4 h-4" />
+            )}
+            <span>{isEditing ? "Apply Edit" : "Generate"}</span>
+          </button>
+        </div>
       </div>
-      
-      <div className="flex justify-between text-xs text-gray-500 px-1">
-        <span className="italic">Be specific about the changes you want to see.</span>
-        <span>{prompt.length} / 500 chars</span>
-      </div>
-    </form>
+    </div>
   );
 };
 

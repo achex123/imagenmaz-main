@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Download, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Added missing import
+import { cn } from '@/lib/utils';
 
-interface ExtraAction {
+interface Action {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
@@ -14,16 +14,18 @@ interface FullScreenImageViewerProps {
   imageUrl: string;
   isOpen: boolean;
   onClose: () => void;
-  onDownload?: () => void;
-  extraActions?: ExtraAction[];
+  onDownload?: (() => void) | null;
+  extraActions?: Action[];
+  darkMode?: boolean;
 }
 
 const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   imageUrl,
   isOpen,
   onClose,
-  onDownload,
-  extraActions = []
+  onDownload = null,
+  extraActions = [],
+  darkMode = true
 }) => {
   const [scale, setScale] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -89,7 +91,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
     setPosition({ x: 0, y: 0 });
   }, []);
 
-  // Handle mouse wheel for zooming - but we'll use a native event listener instead
+  // Handle mouse wheel for zooming
   const handleWheelNative = useCallback((e: WheelEvent) => {
     e.preventDefault();
     if (e.deltaY < 0) {
@@ -194,7 +196,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
           touchStartRef.current = { x: touch.clientX, y: touch.clientY };
         }
       } else if (e.touches.length === 2) {
-        // Two finger pinch for zoom - we'll handle this without preventDefault
+        // Two finger pinch for zoom
         const dist = getDistance(
           e.touches[0].clientX, 
           e.touches[0].clientY, 
@@ -206,10 +208,8 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
     };
 
     const handleTouchMoveManual = (e: TouchEvent) => {
-      // No preventDefault calls here - we'll use other techniques to manage scrolling
-      
       if (isDragging && e.touches.length === 1) {
-        // Handle panning without calling preventDefault
+        // Handle panning
         const touch = e.touches[0];
         
         // Skip small movements to allow scrolling when intended
@@ -230,7 +230,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
         }
       } 
       else if (e.touches.length === 2 && touchDistance !== null) {
-        // Handle pinch zoom without preventDefault
+        // Handle pinch zoom
         const newDist = getDistance(
           e.touches[0].clientX, 
           e.touches[0].clientY, 
@@ -251,7 +251,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
       setTouchDistance(null);
     };
 
-    // Add event listeners - all with passive: true to avoid the error
+    // Add event listeners with passive: true
     container.addEventListener('touchstart', handleTouchStartManual, { passive: true });
     container.addEventListener('touchmove', handleTouchMoveManual, { passive: true });
     container.addEventListener('touchend', handleTouchEndManual, { passive: true });
@@ -266,7 +266,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
     };
   }, [scale, position, dragStart, isDragging, touchDistance, isOpen]);
 
-  // Original React touch handlers - we'll keep these signatures but they won't do anything
+  // Stub React touch handlers
   const handleTouchStart = useCallback(() => {
     // Functionality moved to manual event listeners
   }, []);
@@ -294,28 +294,43 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
 
   if (!isOpen) return null;
   
-  // Create the fullscreen viewer content
+  // Create the fullscreen viewer content with macOS dark theme styling
   const fullscreenContent = (
     <div 
-      className="fixed inset-0 bg-black/95 backdrop-blur-md z-[99999] flex flex-col justify-center items-center"
+      className={cn(
+        "fixed inset-0 z-[99999] flex flex-col justify-center items-center",
+        "backdrop-blur-xl overscroll-none touch-none",
+        darkMode ? "bg-black/95" : "bg-black/90"
+      )}
       onClick={onClose}
       data-testid="fullscreen-viewer"
       style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overscrollBehavior: 'none', touchAction: 'none' }}
     >
-      {/* Top controls - more touch friendly with increased hit areas */}
-      <div className="absolute top-2 right-2 flex flex-wrap items-center gap-1 z-10">
+      {/* Top controls - with macOS styling */}
+      <div className="absolute top-4 right-4 flex flex-wrap items-center gap-2 z-10">
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleZoomOut();
           }}
-          className="p-3 sm:p-2 text-white bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
+          className={cn(
+            "p-2.5 rounded-full transition-all",
+            "backdrop-blur-md shadow-lg",
+            darkMode 
+              ? "bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700/90 border border-zinc-700/80"
+              : "bg-black/30 text-white hover:bg-black/50"
+          )}
           aria-label="Zoom out"
         >
           <ZoomOut className="w-5 h-5" />
         </button>
         
-        <div className="px-3 py-1 bg-black/30 backdrop-blur-md rounded-full text-white text-sm font-medium">
+        <div className={cn(
+          "px-3.5 py-1.5 rounded-full text-sm font-medium backdrop-blur-md",
+          darkMode 
+            ? "bg-zinc-800/80 text-zinc-300 border border-zinc-700/80"
+            : "bg-black/30 text-white"
+        )}>
           {Math.round(scale * 100)}%
         </div>
         
@@ -324,7 +339,13 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
             e.stopPropagation();
             handleZoomIn();
           }}
-          className="p-3 sm:p-2 text-white bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
+          className={cn(
+            "p-2.5 rounded-full transition-all",
+            "backdrop-blur-md shadow-lg",
+            darkMode 
+              ? "bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700/90 border border-zinc-700/80"
+              : "bg-black/30 text-white hover:bg-black/50"
+          )}
           aria-label="Zoom in"
         >
           <ZoomIn className="w-5 h-5" />
@@ -335,7 +356,13 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
             e.stopPropagation();
             resetZoom();
           }}
-          className="p-3 sm:p-2 text-white bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
+          className={cn(
+            "p-2.5 rounded-full transition-all",
+            "backdrop-blur-md shadow-lg",
+            darkMode 
+              ? "bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700/90 border border-zinc-700/80"
+              : "bg-black/30 text-white hover:bg-black/50"
+          )}
           aria-label="Reset zoom"
         >
           <RotateCw className="w-5 h-5" />
@@ -349,8 +376,11 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
               action.onClick();
             }}
             className={cn(
-              "p-3 sm:p-2 text-white backdrop-blur-md rounded-full transition-colors",
-              action.className || "bg-primary/80 hover:bg-primary"
+              "p-2.5 rounded-full text-white transition-all shadow-lg backdrop-blur-md",
+              action.className || (darkMode 
+                ? "bg-indigo-600/80 hover:bg-indigo-500 border border-indigo-500/50"
+                : "bg-indigo-600/80 hover:bg-indigo-500"
+              )
             )}
             aria-label={action.label}
             title={action.label}
@@ -365,7 +395,12 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
               e.stopPropagation();
               onDownload();
             }}
-            className="p-3 sm:p-2 text-white bg-primary/80 backdrop-blur-md rounded-full hover:bg-primary transition-colors"
+            className={cn(
+              "p-2.5 rounded-full text-white transition-all shadow-lg backdrop-blur-md",
+              darkMode 
+                ? "bg-indigo-600/80 hover:bg-indigo-500 border border-indigo-500/50"
+                : "bg-indigo-600/80 hover:bg-indigo-500"
+            )}
             aria-label="Download image"
           >
             <Download className="w-5 h-5" />
@@ -377,7 +412,13 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
             e.stopPropagation();
             onClose();
           }}
-          className="p-3 sm:p-2 text-white bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
+          className={cn(
+            "p-2.5 rounded-full transition-all",
+            "backdrop-blur-md shadow-lg",
+            darkMode 
+              ? "bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700/90 border border-zinc-700/80"
+              : "bg-black/30 text-white hover:bg-black/50"
+          )}
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -387,11 +428,14 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
       {/* Loading indicator */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+          <div className={cn(
+            "w-12 h-12 rounded-full animate-spin",
+            darkMode 
+              ? "border-4 border-indigo-800/60 border-t-indigo-500"
+              : "border-4 border-primary/30 border-t-primary"
+          )}></div>
         </div>
       )}
-      
-      {/* Tooltip removed */}
       
       {/* Image container with touch events */}
       <div 
@@ -416,7 +460,10 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
           ref={imageRef}
           src={imageUrl}
           alt="Full screen preview"
-          className="max-h-full max-w-full object-contain select-none will-change-transform"
+          className={cn(
+            "max-h-full max-w-full object-contain select-none will-change-transform",
+            darkMode ? "filter-saturate-110" : ""
+          )}
           style={{ 
             transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
             transformOrigin: 'center center',
@@ -425,6 +472,18 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
           onLoad={() => setIsLoading(false)}
           draggable={false}
         />
+      </div>
+      
+      {/* Zoom instruction */}
+      <div className={cn(
+        "absolute bottom-6 left-1/2 transform -translate-x-1/2 py-1.5 px-4 rounded-full text-xs backdrop-blur-md",
+        "transition-opacity duration-300",
+        scale <= 1 ? "opacity-50" : "opacity-0",
+        darkMode 
+          ? "bg-zinc-800/70 text-zinc-400 border border-zinc-700/60"
+          : "bg-black/30 text-white/70"
+      )}>
+        Double-tap or pinch to zoom
       </div>
     </div>
   );

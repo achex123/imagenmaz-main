@@ -19,7 +19,7 @@ interface TextToImageResponse {
 export const generateImageFromText = async (prompt: string): Promise<TextToImageResponse> => {
   try {
     if (!API_KEY) {
-      throw new Error('Gemini API key is not configured. Please check your environment variables.');
+      throw new Error('API key is not configured. Please check your environment variables.');
     }
     
     // Show a toast notification to indicate the process has started
@@ -33,7 +33,7 @@ export const generateImageFromText = async (prompt: string): Promise<TextToImage
     const requestData = {
       contents: [{
         parts: [{
-          text: prompt + " (Ultra high quality, 4K detailed image with realistic lighting and textures)"
+          text: prompt + " "
         }]
       }],
       generationConfig: {
