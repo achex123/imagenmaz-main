@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wand2, Sparkles, Loader2 } from 'lucide-react';
+import { Wand2, Sparkles, Loader2, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { enhancePrompt } from '@/lib/enhancePrompt';
 import AnimatedPlaceholder from './AnimatedPlaceholder';
@@ -147,28 +147,28 @@ const PromptInput: React.FC<PromptInputProps> = ({
   ];
   
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full sticky top-0 z-20 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800/50 p-4', className)}>
       {/* Textarea for input with auto-resize */}
-      <div className="relative">
+      <div className="relative max-w-4xl mx-auto">
         <textarea
           ref={textareaRef}
           value={prompt}
           onChange={handleTextareaChange}
           placeholder=" " // Empty placeholder since we're using AnimatedPlaceholder
           disabled={isLoading || disabled || isEnhancing}
-          rows={1}
+          rows={2}
           className={cn(
-            'w-full p-4 text-sm sm:text-base resize-none rounded-lg font-sans min-h-[6rem]',
+            'w-full p-4 pr-24 text-sm sm:text-base resize-none rounded-xl font-sans min-h-[4rem]',
             'focus:ring-2 focus:ring-opacity-50 transition-all duration-200 outline-none',
-            'shadow-lg',
+            'shadow-xl border-2',
             darkMode 
-              ? 'bg-zinc-800/90 border border-zinc-700/60 focus:ring-indigo-500/30 focus:border-indigo-600/40 text-zinc-200 placeholder:text-zinc-500'
-              : 'bg-white border border-gray-200 focus:ring-primary/20 focus:border-primary/40 text-foreground placeholder:text-muted-foreground',
+              ? 'bg-zinc-800/90 border-zinc-700/60 focus:ring-indigo-500/30 focus:border-indigo-600/40 text-zinc-200 placeholder:text-zinc-500'
+              : 'bg-white border-gray-200 focus:ring-primary/20 focus:border-primary/40 text-foreground placeholder:text-muted-foreground',
             (isLoading || disabled || isEnhancing) && 'opacity-70 cursor-not-allowed'
           )}
           style={{ 
             overflowY: 'hidden', // Will be changed by autoResize function if needed
-            maxHeight: '300px' // Max height for the textarea
+            maxHeight: '200px' // Max height for the textarea
           }}
         />
         
@@ -181,25 +181,16 @@ const PromptInput: React.FC<PromptInputProps> = ({
             <AnimatedPlaceholder suggestions={suggestions} />
           </div>
         )}
-      </div>
-      
-      {/* Bottom controls with character count, enhance and submit buttons */}
-      <div className="flex justify-between items-center mt-3">
-        <span className={cn(
-          "text-xs italic",
-          darkMode ? "text-zinc-500" : "text-gray-500"
-        )}>
-          {prompt.length} / 500 chars
-        </span>
         
-        <div className="flex gap-2">
+        {/* Action buttons positioned inside the input */}
+        <div className="absolute right-2 top-2 flex gap-2">
           {/* Enhance button */}
           <button
             type="button"
             onClick={handleEnhancePrompt}
             disabled={!prompt.trim() || isLoading || disabled || isEnhancing}
             className={cn(
-              "px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sm transition-colors",
+              "p-2 rounded-lg flex items-center gap-1.5 text-xs transition-colors",
               prompt.trim() && !isLoading && !disabled && !isEnhancing
                 ? "bg-indigo-900/40 text-indigo-300 hover:bg-indigo-900/60 border border-indigo-800/50"
                 : "bg-zinc-800/70 text-zinc-500 cursor-not-allowed border border-zinc-700/50"
@@ -210,7 +201,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
             ) : (
               <Sparkles className="w-4 h-4" />
             )}
-            <span>Enhance</span>
           </button>
           
           {/* Generate/Submit button */}
@@ -218,7 +208,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
             onClick={handleSubmit}
             disabled={!prompt.trim() || isLoading || disabled || isEnhancing}
             className={cn(
-              "px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sm transition-colors font-medium",
+              "p-2 rounded-lg flex items-center gap-1.5 text-xs transition-colors font-medium",
               prompt.trim() && !isLoading && !disabled && !isEnhancing
                 ? "bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-500 hover:to-indigo-700 text-white border border-indigo-700/50"
                 : "bg-zinc-800/70 text-zinc-500 cursor-not-allowed border border-zinc-700/50"
@@ -227,11 +217,20 @@ const PromptInput: React.FC<PromptInputProps> = ({
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Wand2 className="w-4 h-4" />
+              <Send className="w-4 h-4" />
             )}
-            <span>{isEditing ? "Apply Edit" : "Generate"}</span>
           </button>
         </div>
+      </div>
+      
+      {/* Character count - moved to bottom right */}
+      <div className="flex justify-end mt-2 max-w-4xl mx-auto">
+        <span className={cn(
+          "text-xs",
+          darkMode ? "text-zinc-500" : "text-gray-500"
+        )}>
+          {prompt.length} / 500
+        </span>
       </div>
     </div>
   );
