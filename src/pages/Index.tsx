@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, RotateCcw, Download, PenTool, ArrowLeft } from 'lucide-react';
+import { Sparkles, RotateCcw, Download, PenTool, ArrowLeft, Upload, Zap, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -85,182 +85,283 @@ const Index = () => {
     resetEditor();
     toast.info('Started new edit session');
   };
+
+  const editingTips = [
+    {
+      icon: <Target className="w-5 h-5" />,
+      title: "Be Specific",
+      description: "Describe exactly what you want to change"
+    },
+    {
+      icon: <Zap className="w-5 h-5" />,
+      title: "Use Keywords",
+      description: "Include style, lighting, and quality terms"
+    },
+    {
+      icon: <Sparkles className="w-5 h-5" />,
+      title: "Iterate",
+      description: "Refine your edits step by step"
+    }
+  ];
   
   return (
-    <div className="min-h-screen flex flex-col items-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans bg-zinc-900 text-zinc-200">
-      {/* Header section */}
-      <motion.div
+    <div className="min-h-screen bg-zinc-900 text-zinc-200">
+      {/* Enhanced Header */}
+      <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-4xl mb-8"
+        transition={{ duration: 0.6 }}
+        className="relative z-10 px-4 py-6 border-b border-zinc-800/50"
       >
-        {/* Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-            <span className="mac-gradient-text">Image Editor</span>
-          </h1>
-          <p className="text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto text-balance">
-            Transform your photos with the power of AI. Upload an image and describe the changes you want.
-          </p>
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link 
+            to="/" 
+            className="flex items-center space-x-3 text-zinc-300 hover:text-white transition-colors group"
+          >
+            <div className="p-2 rounded-lg bg-zinc-800/50 group-hover:bg-zinc-700/50 transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </div>
+            <span className="font-medium">Back to Home</span>
+          </Link>
+          
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/imagen.png"
+              alt="Imagen.ma"
+              className="w-8 h-8 rounded-lg"
+            />
+            <span className="text-lg font-bold mac-gradient-text">Imagen.ma</span>
+          </div>
+          
+          <Link 
+            to="/text-to-image"
+            className="flex items-center space-x-2 px-4 py-2 bg-indigo-900/30 text-indigo-300 rounded-lg hover:bg-indigo-900/50 transition-colors border border-indigo-800/50"
+          >
+            <PenTool className="w-4 h-4" />
+            <span className="hidden sm:inline">Image Generator</span>
+          </Link>
         </div>
-      </motion.div>
-      
-      {/* Navigation buttons with counter in center - for consistency with Text-to-Image */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-4xl flex justify-between items-center mb-8"
-      >
-        <Link 
-          to="/" 
-          className="inline-flex items-center text-sm px-4 py-2 rounded-full bg-zinc-800/70 text-indigo-300 hover:bg-zinc-800/90 transition-colors border border-zinc-700/60"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1.5" />
-          Back to Home
-        </Link>
-        
-        {/* Counter in center */}
-        <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 text-xs sm:text-sm rounded-full bg-indigo-900/40 text-indigo-300 border border-indigo-800/50 shadow-inner">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>{usageCount === 0 ? 'First edit' : `${usageCount} ${usageCount === 1 ? 'edit' : 'edits'}`}</span>
-        </div>
-        
-        <Link 
-          to="/text-to-image"
-          className="inline-flex items-center text-sm px-4 py-2 rounded-full bg-indigo-900/30 text-indigo-300 hover:bg-indigo-900/50 transition-colors border border-indigo-800/50"
-        >
-          <PenTool className="w-4 h-4 mr-1.5" />
-          Switch to Image Gen
-        </Link>
-      </motion.div>
-      
-      {/* Main content section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-4xl"
-      >
-        <div className="mac-card p-0.5 overflow-hidden">
-          <div className="bg-zinc-900/90 backdrop-blur-md rounded-xl p-6 sm:p-8 lg:p-9 border border-zinc-800/50 shadow-xl">
-            {/* Usage counter REMOVED as it's now in the navigation bar */}
+      </motion.header>
+
+      {/* Hero Section */}
+      <section className="px-4 py-12">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-center mb-12"
+          >
+            <div className="flex items-center justify-center mb-6">
+              <div className="p-4 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl border border-blue-500/20">
+                <PenTool className="w-8 h-8 text-blue-400" />
+              </div>
+            </div>
             
-            {/* Image section */}
-            <div className="grid grid-cols-1 gap-5 sm:gap-7 mb-6 sm:mb-8 sm:grid-cols-2">
-              {/* Original image section */}
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-zinc-400 flex items-center">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mr-2"></span>
-                  Original Image
-                </p>
-                
-                {originalImage ? (
-                  <div className="relative min-h-[200px] max-h-[400px] w-full rounded-xl overflow-hidden flex items-center justify-center shadow-lg">
-                    <ImagePreview 
-                      imageUrl={originalImage} 
-                      onRemove={removeImage}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                ) : (
-                  <DragDropUpload 
-                    onImageSelected={handleImageSelected}
-                    className="w-full min-h-[200px] max-h-[400px]"
-                  />
-                )}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+              <span className="block">AI Image</span>
+              <span className="block mac-gradient-text">Editor</span>
+            </h1>
+            
+            <p className="text-xl sm:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed">
+              Transform your photos with intelligent AI editing. Upload any image and describe the changes you want - our advanced AI will apply professional-grade modifications instantly.
+            </p>
+
+            {/* Stats */}
+            <div className="flex items-center justify-center gap-8 mb-8">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-400">{usageCount}</div>
+                <div className="text-sm text-zinc-500">Images Edited</div>
+              </div>
+              <div className="w-px h-8 bg-zinc-700"></div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-indigo-400">AI</div>
+                <div className="text-sm text-zinc-500">Powered</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Tips Section */}
+      {!originalImage && (
+        <section className="px-4 pb-8">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mb-8"
+            >
+              <div className="flex items-center justify-center mb-6">
+                <div className="flex items-center gap-3 px-4 py-2 bg-zinc-800/50 rounded-full border border-zinc-700/50">
+                  <Sparkles className="w-4 h-4 text-blue-400" />
+                  <span className="text-sm font-medium text-zinc-300">Editing Tips</span>
+                </div>
               </div>
               
-              {/* Result image section */}
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-zinc-400 flex items-center">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mr-2"></span>
-                  Edited Result
-                </p>
-                
-                {resultImage && !isLoading ? (
-                  <div className="relative min-h-[200px] max-h-[400px] w-full rounded-xl overflow-hidden flex items-center justify-center shadow-lg">
-                    <ImagePreview 
-                      imageUrl={resultImage} 
-                      onRemove={() => resetEditor()}
-                      onContinueEdit={continueEditing}
-                      onDownload={handleDownload}
-                      isResult={true}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full min-h-[200px] max-h-[400px] flex items-center justify-center bg-zinc-800/70 rounded-xl overflow-hidden shadow-lg border border-zinc-700/60">
-                    {isLoading ? (
-                      <div className="flex flex-col items-center justify-center text-center p-6">
-                        <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p className="text-sm font-medium text-zinc-300">Generating your edit...</p>
-                        <p className="text-xs text-zinc-500 mt-1">This may take a few seconds</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                {editingTips.map((tip, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
+                    className="p-6 bg-zinc-800/30 rounded-xl border border-zinc-700/30 text-center"
+                  >
+                    <div className="w-12 h-12 bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 mx-auto text-blue-400">
+                      {tip.icon}
+                    </div>
+                    <h3 className="font-semibold mb-2 text-zinc-200">{tip.title}</h3>
+                    <p className="text-sm text-zinc-400 leading-relaxed">{tip.description}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* Main Editor */}
+      <section className="px-4 pb-16">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <div className="mac-card p-0.5 overflow-hidden">
+              <div className="bg-zinc-900/90 backdrop-blur-md rounded-xl p-6 sm:p-8 lg:p-9 border border-zinc-800/50 shadow-xl">
+                {/* Image section */}
+                <div className="grid grid-cols-1 gap-6 sm:gap-8 mb-8 lg:grid-cols-2">
+                  {/* Original image section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <h3 className="text-lg font-semibold text-zinc-200">Original Image</h3>
+                      </div>
+                      {originalImage && (
+                        <button
+                          onClick={handleNewEdit}
+                          className="flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-300 px-3 py-1.5 hover:bg-zinc-800/70 rounded-lg transition-colors"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          New Edit
+                        </button>
+                      )}
+                    </div>
+                    
+                    {originalImage ? (
+                      <div className="relative min-h-[250px] max-h-[500px] w-full rounded-xl overflow-hidden shadow-lg">
+                        <ImagePreview 
+                          imageUrl={originalImage} 
+                          onRemove={removeImage}
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     ) : (
-                      <div className="text-center p-6 px-4">
-                        <div className="mb-3 opacity-50">
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto text-zinc-500">
-                            <path d="M2 12.5V6.5C2 5.4 2.9 4.5 4 4.5H11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M5.5 11L8 8.5L11 11.5L14.5 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M7 4.5H14.5C15.6 4.5 16.5 5.4 16.5 6.5V13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M20 14.5L12 22.5L9.5 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
+                      <div className="relative">
+                        <DragDropUpload 
+                          onImageSelected={handleImageSelected}
+                          className="w-full min-h-[250px] max-h-[500px]"
+                        />
+                        <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md rounded-full text-xs text-white/90 border border-white/10">
+                          <Upload className="w-3 h-3" />
+                          <span>Upload to start</span>
                         </div>
-                        <p className="text-zinc-400 font-medium">
-                          {originalImage 
-                            ? 'Describe your edit below to transform your image' 
-                            : 'Upload an image to get started'}
-                        </p>
                       </div>
                     )}
                   </div>
-                )}
+                  
+                  {/* Result image section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                      <h3 className="text-lg font-semibold text-zinc-200">Edited Result</h3>
+                    </div>
+                    
+                    {resultImage && !isLoading ? (
+                      <div className="relative min-h-[250px] max-h-[500px] w-full rounded-xl overflow-hidden shadow-lg">
+                        <ImagePreview 
+                          imageUrl={resultImage} 
+                          onRemove={() => resetEditor()}
+                          onContinueEdit={continueEditing}
+                          onDownload={handleDownload}
+                          isResult={true}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full min-h-[250px] max-h-[500px] flex items-center justify-center bg-zinc-800/70 rounded-xl overflow-hidden shadow-lg border border-zinc-700/60">
+                        {isLoading ? (
+                          <div className="flex flex-col items-center justify-center text-center p-8">
+                            <div className="w-12 h-12 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+                            <h4 className="text-lg font-medium text-zinc-300 mb-2">AI is working its magic</h4>
+                            <p className="text-sm text-zinc-500">Processing your edit request...</p>
+                          </div>
+                        ) : (
+                          <div className="text-center p-8">
+                            <div className="w-16 h-16 bg-zinc-700/50 rounded-full flex items-center justify-center mb-4 mx-auto">
+                              <Sparkles className="w-8 h-8 text-zinc-500" />
+                            </div>
+                            <h4 className="text-lg font-medium text-zinc-300 mb-2">
+                              {originalImage 
+                                ? 'Ready for your edit instructions' 
+                                : 'Upload an image to get started'}
+                            </h4>
+                            <p className="text-sm text-zinc-500">
+                              {originalImage 
+                                ? 'Describe the changes you want to make below'
+                                : 'Drag and drop or click to select an image file'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Prompt input section */}
+                <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-xl border border-zinc-800/80 shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                      <h3 className="text-lg font-semibold text-zinc-200">Edit Instructions</h3>
+                    </div>
+                    {originalImage && (
+                      <div className="text-xs text-zinc-500">
+                        Describe the changes you want to make
+                      </div>
+                    )}
+                  </div>
+                  
+                  <PromptInput 
+                    onSubmit={processImage} 
+                    isLoading={isLoading}
+                    disabled={!originalImage || isLoading}
+                    originalImage={originalImage}
+                    isEditing={true}
+                    darkMode={true}
+                  />
+                </div>
               </div>
             </div>
-            
-            {/* Prompt input section - simplified to match text-to-image */}
-            <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-xl border border-zinc-800/80 shadow-lg">
-              {originalImage && (
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-medium text-zinc-300 flex items-center">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mr-2"></span>
-                    Edit Description
-                  </p>
-                  <button
-                    onClick={handleNewEdit}
-                    className="inline-flex items-center text-xs text-zinc-500 hover:text-zinc-300 p-1.5 hover:bg-zinc-800/70 rounded-md transition-colors"
-                  >
-                    <RotateCcw className="w-3 h-3 mr-1" />
-                    New Edit
-                  </button>
-                </div>
-              )}
-              
-              <PromptInput 
-                onSubmit={processImage} 
-                isLoading={isLoading}
-                disabled={!originalImage || isLoading}
-                originalImage={originalImage}
-                isEditing={true}
-                darkMode={true}
-              />
-            </div>
-          </div>
+          </motion.div>
         </div>
-      </motion.div>
-      
-      {/* Footer section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
-        className="mt-8 sm:mt-14 text-center text-xs sm:text-sm text-zinc-500"
-      >
-        <p>Imagen.Ma - Premium AI Image Editor</p>
-        <p className="mt-1.5 text-xs text-zinc-600">Advanced AI for high-quality image editing and generation</p>
-      </motion.div>
+      </section>
+
+      {/* Footer */}
+      <footer className="px-4 py-8 border-t border-zinc-800">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-sm text-zinc-500">
+            Imagen.ma - Professional AI Image Editing Platform
+          </p>
+          <p className="text-xs text-zinc-600 mt-2">
+            Transform your photos with intelligent artificial intelligence
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
